@@ -10,5 +10,6 @@
     "ecosystem:cordova"
   ],
   "author": "Iain Connor",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": "gitlab:priceline-partner-network/no-tab"
 }
