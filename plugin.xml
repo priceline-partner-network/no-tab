@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-no-tab" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
-    <name>NoTab</name>
-    <js-module name="NoTab" src="www/NoTab.js">
-        <clobbers target="cordova.plugins.NoTab" />
+<plugin id="cordova-plugin-no-tab" version="0.0.4" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>notab</name>
+    <dependency id="cordova-plugin-inappbrowser" version="1.7.0" />
+    <js-module name="notab" src="www/NoTab.js">
+        <clobbers target="notab" />
     </js-module>
 </plugin>
