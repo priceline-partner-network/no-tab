@@ -19,7 +19,7 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
                 function noTab() { \
                     var links = document.links, i, length; \
                     for (i = 0, length = links.length; i < length; i++) { \
-                        if (shouldBeInternal(links[i].href, links[i].target) { \
+                        if (shouldBeInternal(links[i].href, links[i].target)) { \
                             links[i].target = "_self"; \
                         } \
                     } \
