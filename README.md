@@ -19,3 +19,9 @@ Optionally, you can tell the app to quit when attempting to browse back beyond t
 ```
 notab.browse("https://www.google.com", [".*google\\\.com", "www\\\.gmail\\\.com"], true);
 ```
+
+Optionally, if you use the [splashscreen plugin](https://github.com/apache/cordova-plugin-splashscreen), you can set `<preference name="AutoHideSplashScreen" value="false" />` and have the screen close on the first page load.
+
+```
+notab.browse("https://www.google.com", [".*google\\\.com", "www\\\.gmail\\\.com"], true, true);
+```

@@ -1,9 +1,13 @@
-exports.browse = function(url, domainWhitelist, exitOnDone, success, error) {
+exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnLoad, success, error) {
     var domainWhiteListPattern = "http(s*):\\\/\\\/(" + domainWhitelist.join("|") + ")";
     var inAppBrowser = cordova.InAppBrowser.open(url, '_blank', 'location=no,fullscreen=yes,hardwareback=yes');
     window.open = cordova.InAppBrowser.open;
 
     inAppBrowser.addEventListener('loadstop', function () {
+        if ( typeof closeSplashScreenOnLoad === "boolean" && closeSplashScreenOnLoad && typeof navigator !== "undefined" && typeof navigator.splashscreen !== "undefined" ) {
+            navigator.splashscreen.hide();
+        }
+
         inAppBrowser.executeScript({
             code:   ' \
                 var domainWhiteListPattern = new RegExp("' + domainWhiteListPattern + '"); \
