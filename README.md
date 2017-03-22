@@ -8,6 +8,14 @@ NoTab will even watch for AJAX responses and update your links after your DOM ch
 
 ## Usage
 
+Launch the in app browser by providing a URL to browse to and an array of regular expressions of URLs to open in the in app browser, even if they specificy `target="_blank"` in the DOM.
+
 ```
 notab.browse("https://www.google.com", [".*google\\\.com", "www\\\.gmail\\\.com"]);
+```
+
+Optionally, you can tell the app to quit when attempting to browse back beyond the original page.
+
+```
+notab.browse("https://www.google.com", [".*google\\\.com", "www\\\.gmail\\\.com"], true);
 ```

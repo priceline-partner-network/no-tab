@@ -1,16 +1,21 @@
-exports.browse = function(url, domainWhitelist, success, error) {
+exports.browse = function(url, domainWhitelist, exitOnDone, success, error) {
     var domainWhiteListPattern = "http(s*):\\\/\\\/(" + domainWhitelist.join("|") + ")";
     var inAppBrowser = cordova.InAppBrowser.open(url, '_blank', 'location=no,fullscreen=yes,hardwareback=yes');
     window.open = cordova.InAppBrowser.open;
+
     inAppBrowser.addEventListener('loadstop', function () {
         inAppBrowser.executeScript({
             code:   ' \
                 var domainWhiteListPattern = new RegExp("' + domainWhiteListPattern + '"); \
                 \
+                function shouldBeInternal(url, target) { \
+                    return typeof target === "string" && target === "_blank" && typeof url === "string" && (url.startsWith("#") || url.startsWith("/") || url.match(domainWhiteListPattern)); \
+                } \
+                \
                 function noTab() { \
                     var links = document.links, i, length; \
                     for (i = 0, length = links.length; i < length; i++) { \
-                        if (typeof links[i].target == "string" && links[i].target == "_blank" && typeof links[i].href == "string" && (links[i].href.startsWith("#") || links[i].href.match(domainWhiteListPattern))) { \
+                        if (shouldBeInternal(links[i].href, links[i].target) { \
                             links[i].target = "_self"; \
                         } \
                     } \
@@ -20,7 +25,7 @@ exports.browse = function(url, domainWhitelist, success, error) {
                 \
                 var _windowOpen = window.open; \
                 window.open = function(url, target, features) { \
-                    if (typeof target == "string" && target == "_blank" && typeof url == "string" && (url.startsWith("#") || url.match(domainWhiteListPattern))) { \
+                    if (shouldBeInternal(url, target)) { \
                         _windowOpen(url, "_self", features); \
                     } else { \
                         _windowOpen(url, target, features); \
@@ -46,4 +51,10 @@ exports.browse = function(url, domainWhitelist, success, error) {
                 };'
         });
     });
+
+    if ( typeof exitOnDone === "boolean" && exitOnDone ) {
+        inAppBrowser.addEventListener('exit', function () {
+            window.close();
+        });
+    }
 };
