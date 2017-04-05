@@ -13,16 +13,16 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
                 var domainWhiteListPattern = new RegExp("' + domainWhiteListPattern + '"); \
                 \
                 function shouldBeInternal(url, target) { \
-                    return (typeof target === "undefined" || (typeof target === "string" && target === "_blank")) && typeof url === "string" && (url.startsWith("#") || url.startsWith("/") || url.match(domainWhiteListPattern)); \
+                    return (typeof target === "undefined" || (typeof target === "string" && target !== "_self")) && typeof url === "string" && (url.startsWith("#") || url.startsWith("/") || url.match(domainWhiteListPattern)); \
                 } \
                 \
                 function noTab() { \
-                    var links = document.links, i, length; \
-                    for (i = 0, length = links.length; i < length; i++) { \
-                        if (shouldBeInternal(links[i].href, links[i].target)) { \
-                            links[i].target = "_self"; \
+                    var elements = document.querySelectorAll("a[target=\"_blank\"], form[target=\"_blank\"]"); \
+                    Array.prototype.forEach.call(elements, function(element, i){ \
+                        if (shouldBeInternal((element.action ? element.action : element.href), element.target)) { \
+                            element.target="_self"; \
                         } \
-                    } \
+                    }); \
                 } \
                 \
                 noTab(); \
