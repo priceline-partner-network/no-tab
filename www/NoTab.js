@@ -17,7 +17,7 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
                 } \
                 \
                 function noTab() { \
-                    var elements = document.querySelectorAll("a[target=\"_blank\"], form[target=\"_blank\"]"); \
+                    var elements = document.querySelectorAll("a[target=\\\"_blank\\\"], form[target=\\\"_blank\\\"]"); \
                     Array.prototype.forEach.call(elements, function(element, i){ \
                         if (shouldBeInternal((element.action ? element.action : element.href), element.target)) { \
                             element.target="_self"; \
