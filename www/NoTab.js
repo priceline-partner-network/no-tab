@@ -2,12 +2,48 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
     var domainWhiteListPattern = "http(s*):\\\/\\\/(" + domainWhitelist.join("|") + ")";
     var inAppBrowser = cordova.InAppBrowser.open(url, '_blank', 'location=no,fullscreen=yes,hardwareback=yes');
     window.open = cordova.InAppBrowser.open;
+    inErrorState = false;
 
-    inAppBrowser.addEventListener('loadstop', function () {
-        if ( typeof closeSplashScreenOnLoad === "boolean" && closeSplashScreenOnLoad && typeof navigator !== "undefined" && typeof navigator.splashscreen !== "undefined" ) {
+    document.addEventListener('online', function () {
+        if ( typeof navigator !== "undefined" && typeof navigator.splashscreen !== "undefined" ) {
             navigator.splashscreen.hide();
         }
 
+        // iF you're currently in an error state,
+        if ( inErrorState ) {
+            inAppBrowser.executeScript({
+                code: 'location.reload();'
+            });
+        }
+    }, false);
+
+    inAppBrowser.addEventListener('loaderror', function () {
+        inErrorState = true;
+
+        if ( typeof navigator !== "undefined" && typeof navigator.splashscreen !== "undefined" ) {
+            navigator.splashscreen.show();
+        }
+
+        // If you're online and still got an error, just go back.
+        if ( navigator.connection.type != Connection.NONE ) {
+            inAppBrowser.executeScript({
+                code: 'window.history.back();'
+            });
+        }
+
+        // Otherwise we'll wait to come back online and then reload.
+    });
+
+    inAppBrowser.addEventListener('loadstop', function () {
+        // If you're currently in an error state, or you should close the splash screen on first load, close it now.
+        if ( (inErrorState || (typeof closeSplashScreenOnLoad === "boolean" && closeSplashScreenOnLoad)) && typeof navigator !== "undefined" && typeof navigator.splashscreen !== "undefined" ) {
+            navigator.splashscreen.hide();
+        }
+
+        // No longer in an error state.
+        inErrorState = false;
+
+        // Override tabs with local links.
         inAppBrowser.executeScript({
             code:   ' \
                 var domainWhiteListPattern = new RegExp("' + domainWhiteListPattern + '"); \
@@ -56,6 +92,7 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
         });
     });
 
+    // If you're supposed to exit the app when heading back to home screen, do so.
     if ( typeof exitOnDone === "boolean" && exitOnDone ) {
         inAppBrowser.addEventListener('exit', function () {
             window.close();
