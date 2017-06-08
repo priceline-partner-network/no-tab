@@ -5,11 +5,7 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
     inErrorState = false;
 
     document.addEventListener('online', function () {
-        if ( typeof navigator !== "undefined" && typeof navigator.splashscreen !== "undefined" ) {
-            navigator.splashscreen.hide();
-        }
-
-        // iF you're currently in an error state,
+        // If you're currently in an error state, reload the current page.
         if ( inErrorState ) {
             inAppBrowser.executeScript({
                 code: 'location.reload();'
@@ -30,20 +26,25 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
                 code: 'window.history.back();'
             });
         } else {
-            window.plugins.toast.showLongBottom('Sorry, we couldn\'t load that. Please check your Internet connection.')
+            // Otherwise we'll wait to come back online and then reload.
+            window.plugins.toast.showLongBottom('Sorry, we couldn\'t load that. Please check your Internet connection and we\'ll try again when you\'re online.')
+        }
+    });
+
+    inAppBrowser.addEventListener('loadstart', function () {
+        // If you're currently in an error state, hide the error message.
+        if ( inErrorState ) {
+            window.plugins.toast.hide();
         }
 
-        // Otherwise we'll wait to come back online and then reload.
+        // No longer in error state until we fail again.
+        inErrorState = false;
     });
 
     inAppBrowser.addEventListener('loadstop', function () {
         // If you're currently in an error state, or you should close the splash screen on first load, close it now.
-        if ( (inErrorState || (typeof closeSplashScreenOnLoad === "boolean" && closeSplashScreenOnLoad)) && typeof navigator !== "undefined" && typeof navigator.splashscreen !== "undefined" ) {
+        if ( typeof navigator !== "undefined" && typeof navigator.splashscreen !== "undefined" ) {
             navigator.splashscreen.hide();
-        }
-
-        if ( inErrorState ) {
-            window.plugins.toast.hide();
         }
 
         // No longer in an error state.
