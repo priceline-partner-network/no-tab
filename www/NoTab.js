@@ -29,6 +29,8 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
             inAppBrowser.executeScript({
                 code: 'window.history.back();'
             });
+        } else {
+            window.plugins.toast.showLongBottom('Sorry, we couldn\'t load that. Please check your Internet connection.')
         }
 
         // Otherwise we'll wait to come back online and then reload.
@@ -38,6 +40,10 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
         // If you're currently in an error state, or you should close the splash screen on first load, close it now.
         if ( (inErrorState || (typeof closeSplashScreenOnLoad === "boolean" && closeSplashScreenOnLoad)) && typeof navigator !== "undefined" && typeof navigator.splashscreen !== "undefined" ) {
             navigator.splashscreen.hide();
+        }
+
+        if ( inErrorState ) {
+            window.plugins.toast.hide();
         }
 
         // No longer in an error state.
