@@ -79,23 +79,16 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
                     } \
                 }; \
                 \
-                var _XMLHttpRequest = XMLHttpRequest; \
-                XMLHttpRequest = function() { \
-                    var xhr = new _XMLHttpRequest(); \
-                    \
-                    var _onload = xhr.onload; \
-                    \
-                    xhr.onload = function() { \
-                        noTab(); \
-                        \
-                        if ( _onload != null && typeof _onload != "undefined" ) { \
-                            \
-                            return _onload.apply(this, arguments); \
-                        } \
+                (function(open) { \
+                    XMLHttpRequest.prototype.open = function () { \
+                        this.addEventListener("readystatechange", function () { \
+                            if (this.readyState == 4) { \
+                                noTab(); \
+                            } \
+                        }, false); \
+                        open.apply(this, arguments); \
                     }; \
-                    \
-                    return xhr; \
-                };'
+                })(XMLHttpRequest.prototype.open);'
         });
     });
 
