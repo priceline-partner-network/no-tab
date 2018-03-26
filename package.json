@@ -1,6 +1,6 @@
 {
   "name": "notab",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Allows you to block specific domains from opening in new tabs/windows and keep them in your app.",
   "cordova": {
     "id": "cordova-plugin-no-tab",
