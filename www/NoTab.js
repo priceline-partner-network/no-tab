@@ -44,7 +44,7 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
         // Just in case we never finish loading, hide our splash and show the screen after a second.
         setTimeout(function() {
             onLoadStop();
-        }, 1500);
+        }, 3000);
 
         // No longer in error state until we fail again.
         inErrorState = false;
