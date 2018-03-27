@@ -3,6 +3,7 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
     var inAppBrowser = cordova.InAppBrowser.open(url, '_blank', 'location=no,fullscreen=yes,hardwareback=yes');
     window.open = cordova.InAppBrowser.open;
     inErrorState = false;
+    doneLoad = false;
 
     document.addEventListener('online', function () {
         // If you're currently in an error state, reload the current page.
@@ -37,59 +38,79 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
             window.plugins.toast.hide();
         }
 
+        // Mark start loading.
+        doneLoad = false;
+
+        // Just in case we never finish loading, hide our splash and show the screen after a second.
+        setTimeout(function() {
+            onLoadStop();
+        }, 1500);
+
         // No longer in error state until we fail again.
         inErrorState = false;
     });
 
-    inAppBrowser.addEventListener('loadstop', function () {
-        // If you're currently in an error state, or you should close the splash screen on first load, close it now.
-        if ( typeof navigator !== "undefined" && typeof navigator.splashscreen !== "undefined" ) {
-            navigator.splashscreen.hide();
+    function onLoadStop() {
+        // If not already finished.
+        if ( !doneLoad ) {
+            // If you're currently in an error state, or you should close the splash screen on first load, close it now.
+            if ( typeof navigator !== "undefined" && typeof navigator.splashscreen !== "undefined" ) {
+                navigator.splashscreen.hide();
+            }
+
+            // No longer in an error state.
+            inErrorState = false;
+
+            // Override tabs with local links.
+            inAppBrowser.executeScript({
+                code:   ' \
+                    var domainWhiteListPattern = new RegExp("' + domainWhiteListPattern + '"); \
+                    \
+                    function shouldBeInternal(url, target) { \
+                        return (typeof target === "undefined" || (typeof target === "string" && target !== "_self")) && typeof url === "string" && (url.startsWith("#") || url.startsWith("/") || url.match(domainWhiteListPattern)); \
+                    } \
+                    \
+                    function noTab() { \
+                        var elements = document.querySelectorAll("a[target=\\\"_blank\\\"], form[target=\\\"_blank\\\"]"); \
+                        Array.prototype.forEach.call(elements, function(element, i){ \
+                            if (shouldBeInternal((element.action ? element.action : element.href), element.target)) { \
+                                element.target="_self"; \
+                            } \
+                        }); \
+                    } \
+                    \
+                    noTab(); \
+                    \
+                    var _windowOpen = window.open; \
+                    window.open = function(url, target, features) { \
+                        if (shouldBeInternal(url, target)) { \
+                            _windowOpen(url, "_self", features); \
+                        } else { \
+                            _windowOpen(url, target, features); \
+                        } \
+                    }; \
+                    \
+                    (function(open) { \
+                        XMLHttpRequest.prototype.open = function () { \
+                            this.addEventListener("readystatechange", function () { \
+                                if (this.readyState == 4) { \
+                                    setTimeout(function() { \
+                                        noTab(); \
+                                    }, 800); \
+                                } \
+                            }, false); \
+                            open.apply(this, arguments); \
+                        }; \
+                    })(XMLHttpRequest.prototype.open);'
+            });
         }
 
-        // No longer in an error state.
-        inErrorState = false;
+        // Now done.
+        doneLoad = true;
+    }
 
-        // Override tabs with local links.
-        inAppBrowser.executeScript({
-            code:   ' \
-                var domainWhiteListPattern = new RegExp("' + domainWhiteListPattern + '"); \
-                \
-                function shouldBeInternal(url, target) { \
-                    return (typeof target === "undefined" || (typeof target === "string" && target !== "_self")) && typeof url === "string" && (url.startsWith("#") || url.startsWith("/") || url.match(domainWhiteListPattern)); \
-                } \
-                \
-                function noTab() { \
-                    var elements = document.querySelectorAll("a[target=\\\"_blank\\\"], form[target=\\\"_blank\\\"]"); \
-                    Array.prototype.forEach.call(elements, function(element, i){ \
-                        if (shouldBeInternal((element.action ? element.action : element.href), element.target)) { \
-                            element.target="_self"; \
-                        } \
-                    }); \
-                } \
-                \
-                noTab(); \
-                \
-                var _windowOpen = window.open; \
-                window.open = function(url, target, features) { \
-                    if (shouldBeInternal(url, target)) { \
-                        _windowOpen(url, "_self", features); \
-                    } else { \
-                        _windowOpen(url, target, features); \
-                    } \
-                }; \
-                \
-                (function(open) { \
-                    XMLHttpRequest.prototype.open = function () { \
-                        this.addEventListener("readystatechange", function () { \
-                            if (this.readyState == 4) { \
-                                noTab(); \
-                            } \
-                        }, false); \
-                        open.apply(this, arguments); \
-                    }; \
-                })(XMLHttpRequest.prototype.open);'
-        });
+    inAppBrowser.addEventListener('loadstop', function () {
+        onLoadStop();
     });
 
     // If you're supposed to exit the app when heading back to home screen, do so.
