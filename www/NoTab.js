@@ -61,7 +61,7 @@ exports.browse = function(url, domainWhitelist, exitOnDone, closeSplashScreenOnL
                 var domainWhiteListPattern = new RegExp("' + domainWhiteListPattern + '"); \
                 \
                 function shouldBeInternal(url, target) { \
-                    return (typeof target === "undefined" || (typeof target === "string" && target !== "_self")) && typeof url === "string" && (url.startsWith("#") || url.startsWith("/") || url.match(domainWhiteListPattern)); \
+                    return (typeof target === "undefined" || (typeof target === "string" && target === "_blank")) && typeof url === "string" && (url.startsWith("#") || url.startsWith("/") || url.match(domainWhiteListPattern)); \
                 } \
                 \
                 document.onclick = function (e) { \
